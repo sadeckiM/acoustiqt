@@ -1,26 +1,20 @@
-set(CMAKE_AUTOMOC ON) 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-
-set(SOURCES
+qt_add_executable(application
+    WIN32 MACOSX_BUNDLE
     src/main.cpp
-    # src/microphone.cpp
     src/mainwindow.cpp
     inc/mainwindow.hh
+    src/mainwindow.ui
 )
 
-set(EXEC main)
+target_include_directories(application PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc")
 
-add_executable(${EXEC} ${SOURCES})
-
-target_include_directories(${EXEC} PRIVATE inc)
-
-target_link_libraries(${EXEC} PRIVATE 
-    Qt6::Widgets 
-    Qt6::Multimedia
+target_link_libraries(application
+    PRIVATE
+        Qt6::Core
+        Qt6::Widgets
 )
 
-target_compile_options( ${EXEC} PRIVATE
+target_compile_options(application PRIVATE
     -Wall
     -Wextra
     -pedantic
@@ -29,5 +23,18 @@ target_compile_options( ${EXEC} PRIVATE
     -Werror=vla
     -Werror=array-bounds
     -Wcast-qual
-    -Wmaybe-uninitialized
 )
+
+install(TARGETS application
+    BUNDLE  DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET application
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${deploy_script})
+
