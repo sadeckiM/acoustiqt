@@ -2,8 +2,11 @@
 #define MAINWINDOW_HH
 
 #include <QMainWindow>
-#include <QtGui>
+#include <QDialog>
 #include <QStackedWidget>
+#include <QLineEdit> 
+#include <QPushButton>
+#include <QLabel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,5 +28,8 @@ private:
 public slots:
     void mainPageWidget();
     void spectrogramPageWidget();
+private slots:
+    void on_btn_theme_clicked();
+    void on_btn_cancel_clicked();
 };
 #endif // MAINWINDOW_HH
