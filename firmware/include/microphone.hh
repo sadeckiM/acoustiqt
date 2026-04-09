@@ -2,19 +2,19 @@
 #define MICROPHONE_HH
 
 #include <Arduino.h>
+#include <driver/i2s.h>
 
-#define I2S_WS 25
-#define I2S_SCK 33
-#define I2S_SD 32
+#define BUFFER_SIZE 512
+#define SAMPLE_RATE 16000
 
-#define YELLOW_LED 26
-#define RED_LED 27
-
-#define I2S_SAMPLE_RATE 16000
-#define I2S_BUFFER_SIZE 1024
-
-bool init_microphone(int pin_sck, int pin_ws, int pin_sd);
-int32_t use_microphone();
-inline void togglePin(int pin) { digitalWrite(pin, !digitalRead(pin)); }
+class Microphone {
+  i2s_config_t i2s_config;
+  i2s_pin_config_t i2s_mic_pins;
+  inline void togglePin(int pin) { digitalWrite(pin, !digitalRead(pin)); }
+public:
+  Microphone(int pin_sck, int pin_ws, int pin_sd, i2s_channel_fmt_t channel,
+             ulong baud_rate);
+  int32_t get_amplitude(uint8_t shift = 14);
+};
 
 #endif
