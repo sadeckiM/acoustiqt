@@ -1,0 +1,7 @@
+CompileFlags:
+  Add: 
+    - "-Iapplication/inc"
+    - "-Ibuild/application"
+    - "-Ibuild/application/application_autogen/include" 
+    - "-Wno-unknown-argument"
+  Remove: [-m*]
