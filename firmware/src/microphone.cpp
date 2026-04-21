@@ -1,31 +1,31 @@
 #include "microphone.hh"
+#include "driver/i2s_common.h"
 
-Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd, i2s_channel_fmt_t channel) {
-  i2s_config = {
-    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-    .sample_rate = SAMPLE_RATE,
-    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
-    .channel_format = channel,
-    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
-    .dma_buf_count = 4,
-    .dma_buf_len = 1024,
-    .use_apll = false,
-    .tx_desc_auto_clear = false,
-    .fixed_mclk = 0
+Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
+  i2s_chan_config_t chan_config = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0,
+                                                          I2S_ROLE_MASTER);
+  i2s_new_channel(&chan_config, NULL, &rx_handle);
+
+  i2s_std_config_t std_cfg = {
+    .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE),
+    .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT,
+                                                I2S_SLOT_MODE_MONO),
+    .gpio_cfg = {
+      .mclk = I2S_GPIO_UNUSED,
+      .bclk = static_cast<gpio_num_t>(pin_sck),
+      .ws = static_cast<gpio_num_t>(pin_ws),
+      .dout = I2S_GPIO_UNUSED,
+      .din = static_cast<gpio_num_t>(pin_sd)
+    }
   };
-  i2s_mic_pins = {
-    .bck_io_num = pin_sck,
-    .ws_io_num = pin_ws,
-    .data_out_num = I2S_PIN_NO_CHANGE,
-    .data_in_num = pin_sd
-  };
-  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
-  i2s_set_pin(I2S_NUM_0, &i2s_mic_pins);
-  Serial.begin(SERIAL_BAUD);
+  std_cfg.slot_cfg.slot_mask = I2S_STD_SLOT_LEFT;
+
+  i2s_channel_init_std_mode(rx_handle, &std_cfg);
+  i2s_channel_enable(rx_handle);
 }
 
 int32_t Microphone::get_rms(uint8_t shift) {
+  if (last_sample <= 0) return 0;
   int64_t sum = 0;
   for (int32_t i = 0; i < last_sample; ++i) {
     int32_t sample = buffer[i] >> shift;
@@ -36,7 +36,8 @@ int32_t Microphone::get_rms(uint8_t shift) {
 
 int32_t Microphone::read_raw_data_to_buffer() {
   size_t bytes_read = 0;
-  esp_err_t err = i2s_read(I2S_NUM_0, buffer, sizeof(int32_t) * BUFFER_SIZE, &bytes_read, portMAX_DELAY); 
+  esp_err_t err = i2s_channel_read(rx_handle, buffer, sizeof(int32_t) *
+                                   BUFFER_SIZE, &bytes_read, pdMS_TO_TICKS(100)); 
   if (err != ESP_OK) {
     Serial.printf("I2S: read_raw: %s\n", esp_err_to_name(err));
     last_sample = 0;

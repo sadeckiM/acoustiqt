@@ -5,6 +5,7 @@
 # Prerequisites
 *.d
 .clangd
+.cache
 
 # Object files
 *.o
