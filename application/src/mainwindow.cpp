@@ -1,6 +1,21 @@
+/**
+ * @file mainwindow.cpp
+ * @author Michał Sadecki (michal.sadecki@proton.me)
+ * @brief 
+ * @version 0.1
+ * @date 2026-04-22
+ *
+ * @copyright Copyright (c) 2026 Michał Sadecki
+ */
+
 #include "mainwindow.hh"
 #include "ui_mainwindow.h"
 
+/**
+ * @brief Konstruktor inicjalizujący główne okno aplikacji. Ustawia sygnały i sloty.
+ *
+ * @param[in] parent wskaźnik na rodzica MainWindow.
+ */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -12,19 +27,31 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(ui->btn_return, SIGNAL(clicked()), this, SLOT(mainPageWidget()));
 }
 
+/**
+ * @brief Domyślny destruktor głównego okna aplkacji.
+ */
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
+/**
+ * @brief Obsługuje główny widżet wizualizacji widma.
+ */
 void MainWindow::mainPageWidget() {
     ui->stackedWidget->setCurrentWidget(ui->page);
 }
 
+/**
+ * @brief Obsługuje widżet spektrogramu.
+ */
 void MainWindow::spectrogramPageWidget() {
     ui->stackedWidget->setCurrentWidget(ui->page_2);
 }
 
+/**
+ * @brief Obsługuje wciśnięcie przycisku "Theme".
+ */
 void MainWindow::on_btn_theme_clicked()
 {
     ui->theme_frame->show();
@@ -35,11 +62,20 @@ void MainWindow::on_btn_theme_clicked()
 }
 
 
+/**
+ * @brief Obsługuje wciśnięcie przycisku "Cancel".
+ */
 void MainWindow::on_btn_cancel_clicked()
 {
     ui->theme_frame->hide();
 }
 
+/**
+ * @brief Przelicza rozmiar okna w zależności od skali ustalonej przez
+ * użytkownika.
+ *
+ * @param event Wskaźnik na zdarzenie.
+ */
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
 
