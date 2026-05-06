@@ -1,17 +1,28 @@
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 qt_add_executable(application
     WIN32 MACOSX_BUNDLE
     src/main.cpp
     src/mainwindow.cpp
-    inc/mainwindow.hh
+    src/udp_receiver.cpp
     src/mainwindow.ui
+    inc/mainwindow.hh
+    inc/udp_receiver.hh
 )
 
-target_include_directories(application PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc")
+target_include_directories(application PRIVATE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/inc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../shared"
+    "${CMAKE_CURRENT_BINARY_DIR}"
+)
 
 target_link_libraries(application
     PRIVATE
         Qt6::Core
         Qt6::Widgets
+        Qt6::Network
 )
 
 target_compile_options(application PRIVATE

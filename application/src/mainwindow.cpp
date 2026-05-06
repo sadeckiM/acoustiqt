@@ -1,7 +1,7 @@
 /**
  * @file mainwindow.cpp
  * @author Michał Sadecki (michal.sadecki@proton.me)
- * @brief 
+ * @brief Plik ten zawiera funkcje związane z głównym oknem aplikacji. 
  * @version 0.1
  * @date 2026-04-22
  *
@@ -9,22 +9,24 @@
  */
 
 #include "mainwindow.hh"
+#include "protocol.hh"
 #include "ui_mainwindow.h"
 
 /**
  * @brief Konstruktor inicjalizujący główne okno aplikacji. Ustawia sygnały i sloty.
  *
- * @param[in] parent wskaźnik na rodzica MainWindow.
+ * @param[in] parent - wskaźnik na rodzica MainWindow.
  */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    ui->theme_frame->setParent(this);
-    ui->theme_frame->hide();
-    QObject::connect(ui->btn_spec, SIGNAL(clicked()), this, SLOT(spectrogramPageWidget()));
-    QObject::connect(ui->btn_return, SIGNAL(clicked()), this, SLOT(mainPageWidget()));
+  receiver = new UdpReceiver(Protocol::PORT, this);
+  ui->setupUi(this);
+  ui->theme_frame->setParent(this);
+  ui->theme_frame->hide();
+  QObject::connect(ui->btn_spec, SIGNAL(clicked()), this, SLOT(spectrogramPageWidget()));
+  QObject::connect(ui->btn_return, SIGNAL(clicked()), this, SLOT(mainPageWidget()));
 }
 
 /**
@@ -74,7 +76,7 @@ void MainWindow::on_btn_cancel_clicked()
  * @brief Przelicza rozmiar okna w zależności od skali ustalonej przez
  * użytkownika.
  *
- * @param event Wskaźnik na zdarzenie.
+ * @param[in] event - Wskaźnik na zdarzenie.
  */
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);

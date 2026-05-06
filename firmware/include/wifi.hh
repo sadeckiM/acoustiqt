@@ -4,13 +4,11 @@
 #include <Arduino.h>
 #include <NetworkUdp.h>
 #include <WiFi.h>
+#include "secrets.hh"
 
 class WiFi_UDP {
-  const char * NETWORK_NAME = "2.4G-Vectra-WiFi-94A317";
-  const char * NETWORK_PASSWORD = "s8bng1zy0qli73vo";
-  const char * UDP_ADDR = "192.168.0.255";
-  const int PORT = 6565;
   bool connected = false;
+  const char * UDP_ADDR = "192.168.0.255";
   NetworkUDP udp;
   void connect_to_wifi(const char * ssid, const char *pwd);
 public:

@@ -578,4 +578,6 @@ tags
 .ionide
 build
 
+secrets.hh
+
 # End of https://www.toptal.com/developers/gitignore/api/c++,c,cmake,doxygen,qt,qml,qtcreator,vim,emacs,visualstudiocode,latex

@@ -1,4 +1,5 @@
 #include "wifi.hh"
+#include "protocol.hh"
 
 WiFi_UDP myWiFi;
 
@@ -28,7 +29,12 @@ void WiFi_UDP::handle_connected() {
   Serial.println(WiFi.localIP());
 
   connected = true;
-  udp.begin(WiFi.localIP(), PORT);
+  udp.begin(WiFi.localIP(), Protocol::PORT);
+
+  if (Protocol::PORT < 1024 || Protocol::PORT > 65535) {
+    Serial.println("handle_connected: bad port.");
+    return;
+  }
   // udp.beginPacket(UDP_ADDR, PORT);
   // udp.print("Czas: ");
   // udp.print(static_cast<ulong>(millis() / 1000));
@@ -44,7 +50,7 @@ void WiFi_UDP::handle_disconnected() {
 void WiFi_UDP::send_audio_data(const int32_t *data, size_t count) {
   if (!connected) return;
 
-  udp.beginPacket(UDP_ADDR, PORT);
+  udp.beginPacket(UDP_ADDR, Protocol::PORT);
   udp.write(reinterpret_cast<const uint8_t*>(data), count * sizeof(int32_t));
   udp.endPacket();
 }

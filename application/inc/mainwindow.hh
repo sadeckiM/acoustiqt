@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QResizeEvent>
+#include "udp_receiver.hh"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -20,19 +21,20 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
+  explicit MainWindow(QWidget *parent = nullptr);
+  ~MainWindow() override;
 protected:
-    void resizeEvent(QResizeEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
 
 private:
-    Ui::MainWindow *ui;
+  Ui::MainWindow *ui;
+  UdpReceiver *receiver;
 
 public slots:
-    void mainPageWidget();
-    void spectrogramPageWidget();
+  void mainPageWidget();
+  void spectrogramPageWidget();
 private slots:
-    void on_btn_theme_clicked();
-    void on_btn_cancel_clicked();
+  void on_btn_theme_clicked();
+  void on_btn_cancel_clicked();
 };
 #endif // MAINWINDOW_HH
