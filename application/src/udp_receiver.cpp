@@ -38,7 +38,7 @@ void UdpReceiver::readPendingDatagrams() {
       continue;
     }
 
-    uint8_t expected_crc = verifyChecksum(reinterpret_cast<const unsigned
+    uint8_t expected_crc = Protocol::calculate_crc8(reinterpret_cast<const unsigned
                                           char*>(frame), sizeof(AudioFrame) - 1,
                                           Protocol::POLYNOMIAL, Protocol::INIT_VAL);
 
@@ -54,17 +54,4 @@ void UdpReceiver::readPendingDatagrams() {
               samples_vec.begin());
     emit audioDataReceived(samples_vec);
   }
-}
-
-
-uint8_t UdpReceiver::verifyChecksum(const unsigned char* data, int len,
-                                    uint8_t poly, uint8_t init_val) {
-  uint8_t res_crc = init_val;
-
-  while (--len >= 0) {
-    res_crc ^= *data++;
-    for (uint8_t i = 0 ; i < 8; ++i)
-      res_crc = res_crc & 0x80 ? (res_crc << 1) ^ poly : res_crc << 1;
-  }
-  return res_crc;
 }

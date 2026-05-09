@@ -24,7 +24,7 @@ Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
   i2s_channel_enable(rx_handle);
 }
 
-int32_t Microphone::get_rms(uint8_t shift) {
+int32_t Microphone::get_rms(uint8_t shift) const {
   if (last_sample <= 0) return 0;
   int64_t sum = 0;
   for (int32_t i = 0; i < last_sample; ++i) {
