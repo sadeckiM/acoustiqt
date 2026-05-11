@@ -10,9 +10,20 @@ qt_add_executable(application
     src/main.cpp
     src/mainwindow.cpp
     src/udp_receiver.cpp
+    src/spectrogram_visualizer.cpp
+    src/spectrum_visualizer.cpp
+    src/fft_processor.cpp
     src/mainwindow.ui
+
     inc/mainwindow.hh
     inc/udp_receiver.hh
+    inc/spectrogram_visualizer.hh
+    inc/spectrum_visualizer.hh
+    inc/fft_processor.hh
+
+    ../shared/protocol.hh
+    ../shared/protocol.cpp
+    ../shared/audio_config.hh
 )
 
 target_include_directories(application PRIVATE 

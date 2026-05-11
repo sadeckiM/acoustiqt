@@ -1,64 +1,60 @@
-/**
- * @file mainwindow.cpp
- * @author Michał Sadecki (michal.sadecki@proton.me)
- * @brief Plik ten zawiera funkcje związane z głównym oknem aplikacji. 
- * @version 0.1
- * @date 2026-04-22
- *
- * @copyright Copyright (c) 2026 Michał Sadecki
- */
-
 #include "mainwindow.hh"
 #include "ui_mainwindow.h"
 #include "protocol.hh"
 
-/**
- * @brief Konstruktor inicjalizujący główne okno aplikacji. Ustawia sygnały i sloty.
- *
- * @param[in] parent - wskaźnik na rodzica MainWindow.
- */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
-  receiver = new UdpReceiver(Protocol::PORT, this);
-  processor = new FFTProcessor(this);
-  visualizer = new SpectrumVisualizer(this);
   ui->setupUi(this);
-  ui->theme_frame->setParent(this);
-  ui->theme_frame->hide();
-  QObject::connect(ui->btn_spec, SIGNAL(clicked()), this, SLOT(spectrogramPageWidget()));
-  QObject::connect(ui->btn_return, SIGNAL(clicked()), this, SLOT(mainPageWidget()));
-  QObject::connect(receiver, &UdpReceiver::audioDataReceived, processor,
-                   &FFTProcessor::handleRawAudio);
-  QObject::connect(processor, &FFTProcessor::spectrumReady, visualizer,
-                   &SpectrumVisualizer::updateSpectrum);
+  initObjects();
+  setupLayouts();
+  initConnections();
 }
 
-/**
- * @brief Domyślny destruktor głównego okna aplkacji.
- */
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-/**
- * @brief Obsługuje główny widżet wizualizacji widma.
- */
 void MainWindow::mainPageWidget() {
     ui->stackedWidget->setCurrentWidget(ui->page);
 }
 
-/**
- * @brief Obsługuje widżet spektrogramu.
- */
+void MainWindow::initObjects() {
+  receiver = new UdpReceiver(Protocol::PORT, this);
+  processor = new FFTProcessor(this);
+  spectrum_visualizer = new SpectrumVisualizer(this);
+  spectrogram_visualizer = new SpectrogramVisualizer(this);
+}
+
+void MainWindow::setupLayouts() {
+  ui->theme_frame->setParent(this);
+  ui->theme_frame->hide();
+  ui->horizontalLayout_5->addWidget(spectrogram_visualizer);
+  ui->verticalLayout_4->addWidget(spectrum_visualizer);
+}
+
+void MainWindow::initConnections() {
+  QObject::connect(ui->btn_spec, &QPushButton::clicked,
+                   this, &MainWindow::spectrogramPageWidget);
+  QObject::connect(ui->btn_return, &QPushButton::clicked, this, &MainWindow::mainPageWidget);
+  QObject::connect(ui->verticalSlider, &QSlider::valueChanged,
+                  ui->spinBox, &QSpinBox::setValue);
+  QObject::connect(ui->spinBox, &QSpinBox::valueChanged, ui->verticalSlider,
+                   &QSlider::setValue);
+  QObject::connect(receiver, &UdpReceiver::audioDataReceived, processor,
+                   &FFTProcessor::handleRawAudio);
+  QObject::connect(processor, &FFTProcessor::spectrumReady, spectrum_visualizer,
+                   &SpectrumVisualizer::updateSpectrum);
+  QObject::connect(processor, &FFTProcessor::spectrumReady,
+                   spectrogram_visualizer,
+                   &SpectrogramVisualizer::addFFTLine);
+}
+
 void MainWindow::spectrogramPageWidget() {
     ui->stackedWidget->setCurrentWidget(ui->page_2);
 }
 
-/**
- * @brief Obsługuje wciśnięcie przycisku "Theme".
- */
 void MainWindow::on_btn_theme_clicked()
 {
     ui->theme_frame->show();
@@ -68,21 +64,11 @@ void MainWindow::on_btn_theme_clicked()
     ui->theme_frame->move(x, y);
 }
 
-
-/**
- * @brief Obsługuje wciśnięcie przycisku "Cancel".
- */
 void MainWindow::on_btn_cancel_clicked()
 {
     ui->theme_frame->hide();
 }
 
-/**
- * @brief Przelicza rozmiar okna w zależności od skali ustalonej przez
- * użytkownika.
- *
- * @param[in] event - Wskaźnik na zdarzenie.
- */
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
 

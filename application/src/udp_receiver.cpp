@@ -48,10 +48,10 @@ void UdpReceiver::readPendingDatagrams() {
       continue;
     }
 
-    QList<int32_t> samples_vec;
-    samples_vec.resize(Protocol::SAMPLES_PER_PACKET);
+    QList<int32_t> samples_list;
+    samples_list.resize(Protocol::SAMPLES_PER_PACKET);
     std::copy(std::begin(frame->samples), std::end(frame->samples),
-              samples_vec.begin());
-    emit audioDataReceived(samples_vec);
+              samples_list.begin());
+    emit audioDataReceived(samples_list);
   }
 }

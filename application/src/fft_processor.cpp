@@ -1,35 +1,85 @@
 #include "fft_processor.hh"
 #include <cmath>
+#include "audio_config.hh"
 
 FFTProcessor::FFTProcessor(QObject *parent) : QObject(parent) {
-  fft_in = static_cast<double*>(fftw_malloc(sizeof(double) * N));
-  fft_out = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * N));
-  fft_plan = fftw_plan_dft_r2c_1d(N, fft_in, fft_out, FFTW_ESTIMATE);
+  fft_in = static_cast<double*>(fftw_malloc(sizeof(double) * AudioConfig::N));
+  fft_out = static_cast<fftw_complex*>(fftw_malloc(sizeof(fftw_complex) * AudioConfig::N));
+  fft_plan = fftw_plan_dft_r2c_1d(AudioConfig::N, fft_in, fft_out, FFTW_ESTIMATE);
 }
 
-void FFTProcessor::calculateMag() {
+QList<double> FFTProcessor::calculateMag() {
   QList<double> spectrum;
-  spectrum.reserve(N / 2);
-  for (int i = 0; i < N / 2; ++i) {
+  spectrum.reserve(AudioConfig::N / 2);
+  for (int i = 0; i < AudioConfig::N / 2; ++i) {
     double real = fft_out[i][0];
     double imag = fft_out[i][1];
     double mag = sqrt(real * real + imag * imag);
     spectrum.append(mag);
   }
-  emit spectrumReady(spectrum);
+  return spectrum;
 }
 
 void FFTProcessor::handleRawAudio(const QList<int32_t> &raw_samples) {
-  if (raw_samples.size() < N) return;
+  if (raw_samples.size() < AudioConfig::N) return;
 
-  for (int i = 0; i < N; ++i) {
-    double sample = (static_cast<double>(raw_samples[i]) / max_int32_t) * volume_gain;
-    double window = 0.5 * (1 - cos(2 * M_PI * i) / N);
+  for (int i = 0; i < AudioConfig::N; ++i) {
+    double sample = (static_cast<double>(raw_samples[i]) /
+      AudioConfig::max_int32_t) * AudioConfig::volume_gain;
+    double window = 0.5 * (1 - cos(2 * M_PI * i) / AudioConfig::N);
     fft_in[i] = sample * window;
   }
 
   fftw_execute(fft_plan);
-  calculateMag();
+  AudioStats stats;
+  QList<double> magnitudes = calculateMag();
+  stats.dominant_freq = calculateDominantFreq(magnitudes);
+  stats.rms = calculateRMS(raw_samples);
+  stats.zcr = calculateZCR(raw_samples);
+  emit spectrumReady(magnitudes);
+  emit statsReady(stats);
+}
+
+double FFTProcessor::calculateRMS(const QList<int32_t> &raw_samples) {
+  if (raw_samples.isEmpty()) return 0.0;
+
+  double sum = 0;
+  for (int32_t i = 0; i < AudioConfig::N; ++i) {
+    double normalized_sample = static_cast<double>(raw_samples[i] / AudioConfig::max_int32_t);
+    sum += normalized_sample * normalized_sample;
+  }
+  return std::sqrt(sum / AudioConfig::N);
+}
+
+double FFTProcessor::calculateDominantFreq(const QList<double> &magnitudes) {
+  if (magnitudes.isEmpty()) return 0.0;
+  QList<double>::const_iterator it = std::max_element(magnitudes.begin(), magnitudes.end());
+  uint16_t max_index = std::distance(magnitudes.begin(), it);
+  return max_index * (AudioConfig::SAMPLE_RATE / static_cast<double>(AudioConfig::N));
+}
+
+uint16_t FFTProcessor::calculateZCR(const QList<int32_t> &raw_samples) {
+  if (raw_samples.isEmpty()) return 0.0;
+
+  uint16_t crossings = 0;
+  for (uint16_t i = 0; i < AudioConfig::N; ++i) {
+    if (raw_samples[i - 1] > 0 && raw_samples[i] < 0)
+      ++crossings;
+    else if (raw_samples[i - 1] < 0 && raw_samples[i] > 0)
+        ++crossings;
+  }
+  return crossings;
+}
+
+double FFTProcessor::calculatePeak(const QList<int32_t> &raw_samples) {
+  if (raw_samples.isEmpty()) return 0.0;
+
+  QList<int32_t>::const_iterator it = std::max_element(raw_samples.begin(),
+                                                       raw_samples.end(),
+                                                       [](int32_t a, int32_t b) {
+    return std::abs(a) < std::abs(b);
+  }); 
+  return std::abs(*it) / AudioConfig::max_int32_t; 
 }
 
 FFTProcessor::~FFTProcessor() {

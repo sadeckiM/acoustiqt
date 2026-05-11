@@ -1,5 +1,6 @@
 #include "microphone.hh"
 #include "driver/i2s_common.h"
+#include "audio_config.hh"
 
 Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
   i2s_chan_config_t chan_config = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0,
@@ -7,7 +8,7 @@ Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
   i2s_new_channel(&chan_config, NULL, &rx_handle);
 
   i2s_std_config_t std_cfg = {
-    .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE),
+    .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(AudioConfig::SAMPLE_RATE),
     .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT,
                                                 I2S_SLOT_MODE_MONO),
     .gpio_cfg = {
@@ -24,15 +25,6 @@ Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
   i2s_channel_enable(rx_handle);
 }
 
-int32_t Microphone::get_rms(uint8_t shift) const {
-  if (last_sample <= 0) return 0;
-  int64_t sum = 0;
-  for (int32_t i = 0; i < last_sample; ++i) {
-    int32_t sample = buffer[i] >> shift;
-    sum += sample * sample;
-  }
-  return static_cast<int32_t>(std::sqrt(sum/last_sample));
-}
 
 int32_t Microphone::read_raw_data_to_buffer() {
   size_t bytes_read = 0;
