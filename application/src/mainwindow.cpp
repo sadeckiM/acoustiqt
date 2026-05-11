@@ -9,8 +9,8 @@
  */
 
 #include "mainwindow.hh"
-#include "protocol.hh"
 #include "ui_mainwindow.h"
+#include "protocol.hh"
 
 /**
  * @brief Konstruktor inicjalizujący główne okno aplikacji. Ustawia sygnały i sloty.
@@ -19,14 +19,19 @@
  */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-{
+    , ui(new Ui::MainWindow) {
   receiver = new UdpReceiver(Protocol::PORT, this);
+  processor = new FFTProcessor(this);
+  visualizer = new SpectrumVisualizer(this);
   ui->setupUi(this);
   ui->theme_frame->setParent(this);
   ui->theme_frame->hide();
   QObject::connect(ui->btn_spec, SIGNAL(clicked()), this, SLOT(spectrogramPageWidget()));
   QObject::connect(ui->btn_return, SIGNAL(clicked()), this, SLOT(mainPageWidget()));
+  QObject::connect(receiver, &UdpReceiver::audioDataReceived, processor,
+                   &FFTProcessor::handleRawAudio);
+  QObject::connect(processor, &FFTProcessor::spectrumReady, visualizer,
+                   &SpectrumVisualizer::updateSpectrum);
 }
 
 /**

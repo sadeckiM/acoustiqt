@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QUdpSocket>
-#include <QVector>
+#include <QList>
 
 class UdpReceiver : public QObject {
   QUdpSocket *udp_socket;
@@ -11,7 +11,7 @@ class UdpReceiver : public QObject {
 public:
   explicit UdpReceiver(uint16_t port, QObject * parent = nullptr);
 signals:
-  void audioDataReceived(const QVector<int32_t>& samples);
+  void audioDataReceived(const QList<int32_t>& samples);
 
 private slots:
   void readPendingDatagrams();

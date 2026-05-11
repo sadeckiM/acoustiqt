@@ -2,6 +2,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW REQUIRED fftw3)
+
 qt_add_executable(application
     WIN32 MACOSX_BUNDLE
     src/main.cpp
@@ -16,6 +19,7 @@ target_include_directories(application PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/inc"
     "${CMAKE_CURRENT_SOURCE_DIR}/../shared"
     "${CMAKE_CURRENT_BINARY_DIR}"
+    ${FFTW_INCLUDE_DIRS}
 )
 
 target_link_libraries(application
@@ -23,6 +27,7 @@ target_link_libraries(application
         Qt6::Core
         Qt6::Widgets
         Qt6::Network
+        ${FFTW_LIBRARIES}
 )
 
 target_compile_options(application PRIVATE

@@ -9,27 +9,26 @@
 #include <QLabel>
 #include <QResizeEvent>
 #include "udp_receiver.hh"
+#include "spectrum_visualizer.hh"
+#include "fft_processor.hh"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class MainWindow;
+  class MainWindow;
 }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
-    Q_OBJECT
-
+class MainWindow : public QMainWindow {
+  Ui::MainWindow *ui;
+  UdpReceiver *receiver;
+  FFTProcessor *processor;
+  SpectrumVisualizer *visualizer;
+  Q_OBJECT
 public:
   explicit MainWindow(QWidget *parent = nullptr);
   ~MainWindow() override;
 protected:
   void resizeEvent(QResizeEvent *event) override;
-
-private:
-  Ui::MainWindow *ui;
-  UdpReceiver *receiver;
-
 public slots:
   void mainPageWidget();
   void spectrogramPageWidget();
