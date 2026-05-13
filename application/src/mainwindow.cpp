@@ -57,11 +57,12 @@ void MainWindow::spectrogramPageWidget() {
 
 void MainWindow::on_btn_theme_clicked()
 {
-    ui->theme_frame->show();
-    ui->theme_frame->raise();
     int x = (this->width() - ui->theme_frame->width()) / 2;
     int y = (this->height() - ui->theme_frame->height()) / 2;
     ui->theme_frame->move(x, y);
+
+    ui->theme_frame->raise();
+    ui->theme_frame->show();
 }
 
 void MainWindow::on_btn_cancel_clicked()
