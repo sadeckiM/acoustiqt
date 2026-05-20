@@ -1,6 +1,7 @@
 #include "mainwindow.hh"
 #include "ui_mainwindow.h"
 #include "protocol.hh"
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,6 +10,9 @@ MainWindow::MainWindow(QWidget *parent)
   initObjects();
   setupLayouts();
   initConnections();
+  QSettings settings("KoNaR", "AcoustiQt");
+  int saved_volume = settings.value("volumeSliderPos", 50).toInt();
+  ui->verticalSlider->setValue(saved_volume);
 }
 
 MainWindow::~MainWindow()
@@ -23,14 +27,11 @@ void MainWindow::mainPageWidget() {
 void MainWindow::initObjects() {
   receiver = new UdpReceiver(Protocol::PORT, this);
   processor = new FFTProcessor(this);
-  spectrogram_visualizer = new SpectrogramVisualizer(this);
-  spectrum_visualizer = new SpectrumVisualizer(this);
 }
 
 void MainWindow::setupLayouts() {
   ui->theme_frame->setParent(this);
   ui->theme_frame->hide();
-  ui->horizontalLayout_5->addWidget(spectrogram_visualizer);
 }
 
 void MainWindow::initConnections() {
@@ -43,15 +44,12 @@ void MainWindow::initConnections() {
                    &QSlider::setValue);
   QObject::connect(receiver, &UdpReceiver::audioDataReceived, processor,
                    &FFTProcessor::handleRawAudio);
-  QObject::connect(processor, &FFTProcessor::spectrumReady, spectrum_visualizer,
-                   &SpectrumVisualizer::updateSpectrum);
-  QObject::connect(processor, &FFTProcessor::spectrumReady,
-                   spectrogram_visualizer,
-                   &SpectrogramVisualizer::addFFTLine);
   QObject::connect(ui->verticalSlider, &QSlider::valueChanged,
-                     processor, &FFTProcessor::setVolumeGain);
+                     this, &MainWindow::onVolumeSliderChanged);
   QObject::connect(processor, &FFTProcessor::spectrumReady, 
                    ui->spectrum_widget, &SpectrumVisualizer::updateSpectrum);
+  QObject::connect(processor, &FFTProcessor::spectrumReady,
+                   ui->spectrogram_widget, &SpectrogramVisualizer::addFFTLine);
 }
 
 void MainWindow::spectrogramPageWidget() {
@@ -84,3 +82,19 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
     }
 }
 
+void MainWindow::onVolumeSliderChanged(int value) {
+  double gain = 1.0;
+  if (value > 0)
+    gain = 1.0 * std::pow(100.0 / 1.0, static_cast<double>(value) / 100.0);
+  else
+    gain = 0.0;
+
+  processor->setVolumeGain(gain);
+  ui->spinBox->setValue(value);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+  QSettings settings("KoNaR", "AcoustiQt");
+  settings.setValue("volumeSliderPos", ui->verticalSlider->value());
+  QMainWindow::closeEvent(event);
+}

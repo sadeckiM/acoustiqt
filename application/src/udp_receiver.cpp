@@ -52,7 +52,7 @@ void UdpReceiver::readPendingDatagrams() {
     samples_list.resize(Protocol::SAMPLES_PER_PACKET);
     std::copy(std::begin(frame->samples), std::end(frame->samples),
               samples_list.begin());
-    qDebug() << "Otrzymano dane: " << samples_list.size();
+    // qDebug() << "Otrzymano dane: " << samples_list.size();
     emit audioDataReceived(samples_list);
   }
 }

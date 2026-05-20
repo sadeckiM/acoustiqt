@@ -446,7 +446,7 @@ QSlider::groove:vertical {
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="10,0,2">
           <item>
-           <widget class="QWidget" name="spectrogram_widget" native="true">
+           <widget class="SpectrogramVisualizer" name="spectrogram_widget" native="true">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(255, 255, 255);</string>
             </property>
@@ -856,6 +856,12 @@ QSlider::groove:vertical {
    <class>SpectrumVisualizer</class>
    <extends>QWidget</extends>
    <header>spectrum_visualizer.hh</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SpectrogramVisualizer</class>
+   <extends>QWidget</extends>
+   <header>spectrogram_visualizer.hh</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

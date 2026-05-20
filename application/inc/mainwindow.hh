@@ -51,6 +51,9 @@ class MainWindow : public QMainWindow {
   */
   void initConnections();
   Q_OBJECT
+
+private slots:
+  void onVolumeSliderChanged(int value);
 public:
   /**
    * @brief Konstruktor inicjalizujący główne okno aplikacji. Ustawia sygnały i sloty.
@@ -71,6 +74,7 @@ protected:
   * @param[in] event - Wskaźnik na zdarzenie.
   */
   void resizeEvent(QResizeEvent *event) override;
+  void closeEvent(QCloseEvent *event) override;
 public slots:
   /**
    * @brief Obsługuje główny widżet wizualizacji widma.
