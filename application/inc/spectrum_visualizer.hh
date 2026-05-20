@@ -25,6 +25,7 @@
   */
 class SpectrumVisualizer : public QWidget {
   Q_OBJECT 
+  QList<double> spectrum_data;
 public:
   /**
   * @brief Inicjalizuje wizualizator widma. 

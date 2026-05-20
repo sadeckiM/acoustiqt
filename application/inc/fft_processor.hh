@@ -65,6 +65,8 @@ class FFTProcessor : public QObject {
   double *fft_in;
   fftw_complex *fft_out;
   AudioStats stats;
+  /// Mnożnik wzmocnienia głośności sygnału wejściowego.
+  double volume_gain = 1.0;
 
   /**
   * @brief Oblicza widmo aplitudowe dla wartości z FFT.
@@ -107,6 +109,8 @@ public:
   */
   explicit FFTProcessor(QObject *parent = nullptr);
 
+  double getDecibels(const QList<int32_t> &raw_samples); 
+
   /**
   * @brief Destruktor domyślny klasy FFTProcessor.
   *
@@ -123,6 +127,7 @@ public slots:
   * @param[in] raw_samples -- referencja na listę z surowymi danymi.
   */
   void handleRawAudio(const QList<int32_t> &raw_samples);
+  inline void setVolumeGain(uint8_t value) {this->volume_gain = value / 50.0;};
 signals:
   /**
   * @brief Sygnał wysyłany, gdy widmo zostanie poprawnie obliczone.

@@ -23,15 +23,14 @@ void MainWindow::mainPageWidget() {
 void MainWindow::initObjects() {
   receiver = new UdpReceiver(Protocol::PORT, this);
   processor = new FFTProcessor(this);
-  spectrum_visualizer = new SpectrumVisualizer(this);
   spectrogram_visualizer = new SpectrogramVisualizer(this);
+  spectrum_visualizer = new SpectrumVisualizer(this);
 }
 
 void MainWindow::setupLayouts() {
   ui->theme_frame->setParent(this);
   ui->theme_frame->hide();
   ui->horizontalLayout_5->addWidget(spectrogram_visualizer);
-  ui->verticalLayout_4->addWidget(spectrum_visualizer);
 }
 
 void MainWindow::initConnections() {
@@ -49,6 +48,10 @@ void MainWindow::initConnections() {
   QObject::connect(processor, &FFTProcessor::spectrumReady,
                    spectrogram_visualizer,
                    &SpectrogramVisualizer::addFFTLine);
+  QObject::connect(ui->verticalSlider, &QSlider::valueChanged,
+                     processor, &FFTProcessor::setVolumeGain);
+  QObject::connect(processor, &FFTProcessor::spectrumReady, 
+                   ui->spectrum_widget, &SpectrumVisualizer::updateSpectrum);
 }
 
 void MainWindow::spectrogramPageWidget() {

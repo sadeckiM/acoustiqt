@@ -1,6 +1,7 @@
 #include "fft_processor.hh"
 #include <cmath>
 #include "audio_config.hh"
+#include <QDebug>
 
 FFTProcessor::FFTProcessor(QObject *parent) : QObject(parent) {
   fft_in = static_cast<double*>(fftw_malloc(sizeof(double) * AudioConfig::N));
@@ -11,21 +12,26 @@ FFTProcessor::FFTProcessor(QObject *parent) : QObject(parent) {
 QList<double> FFTProcessor::calculateMag() {
   QList<double> spectrum;
   spectrum.reserve(AudioConfig::N / 2);
-  for (int i = 0; i < AudioConfig::N / 2; ++i) {
+  for (uint16_t i = 0; i < AudioConfig::N / 2; ++i) {
     double real = fft_out[i][0];
     double imag = fft_out[i][1];
     double mag = sqrt(real * real + imag * imag);
     spectrum.append(mag);
   }
+  // qDebug() << "Magnitude: " << spectrum[0];
   return spectrum;
 }
 
 void FFTProcessor::handleRawAudio(const QList<int32_t> &raw_samples) {
   if (raw_samples.size() < AudioConfig::N) return;
 
-  for (int i = 0; i < AudioConfig::N; ++i) {
+  // qDebug() << "FFT dostało " << raw_samples.size() << "próbek, gain: " <<
+  //   volume_gain;
+  // qDebug() << "Próbka:" << raw_samples[0];
+
+  for (uint16_t i = 0; i < AudioConfig::N; ++i) {
     double sample = (static_cast<double>(raw_samples[i]) /
-      AudioConfig::max_int32_t) * AudioConfig::volume_gain;
+      AudioConfig::MAX_INT32_T) * volume_gain;
     double window = 0.5 * (1 - cos(2 * M_PI * i) / AudioConfig::N);
     fft_in[i] = sample * window;
   }
@@ -44,11 +50,17 @@ double FFTProcessor::calculateRMS(const QList<int32_t> &raw_samples) {
   if (raw_samples.isEmpty()) return 0.0;
 
   double sum = 0;
-  for (int32_t i = 0; i < AudioConfig::N; ++i) {
-    double normalized_sample = static_cast<double>(raw_samples[i] / AudioConfig::max_int32_t);
+  for (uint16_t i = 0; i < AudioConfig::N; ++i) {
+    double normalized_sample = static_cast<double>(raw_samples[i] / AudioConfig::MAX_INT32_T);
     sum += normalized_sample * normalized_sample;
   }
   return std::sqrt(sum / AudioConfig::N);
+}
+
+double FFTProcessor::getDecibels(const QList<int32_t> &raw_samples) { 
+  double rms = calculateRMS(raw_samples);
+  if (rms < 0.00001) return 0.0;
+  return 20 * std::log10(rms) + AudioConfig::NOISE_THRESHOLD;
 }
 
 double FFTProcessor::calculateDominantFreq(const QList<double> &magnitudes) {
@@ -79,7 +91,7 @@ double FFTProcessor::calculatePeak(const QList<int32_t> &raw_samples) {
                                                        [](int32_t a, int32_t b) {
     return std::abs(a) < std::abs(b);
   }); 
-  return std::abs(*it) / AudioConfig::max_int32_t; 
+  return std::abs(*it) / AudioConfig::MAX_INT32_T; 
 }
 
 FFTProcessor::~FFTProcessor() {

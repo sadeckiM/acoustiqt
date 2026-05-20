@@ -9,7 +9,7 @@ Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
 
   i2s_std_config_t std_cfg = {
     .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(AudioConfig::SAMPLE_RATE),
-    .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT,
+    .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT,
                                                 I2S_SLOT_MODE_MONO),
     .gpio_cfg = {
       .mclk = I2S_GPIO_UNUSED,
@@ -23,8 +23,8 @@ Microphone::Microphone(int32_t pin_sck, int32_t pin_ws, int32_t pin_sd) {
 
   i2s_channel_init_std_mode(rx_handle, &std_cfg);
   i2s_channel_enable(rx_handle);
+  Serial.println("Stworzono obiekt mikrofonu");
 }
-
 
 int32_t Microphone::read_raw_data_to_buffer() {
   size_t bytes_read = 0;
@@ -36,5 +36,6 @@ int32_t Microphone::read_raw_data_to_buffer() {
     return -1;
   }
   last_sample = static_cast<int32_t>(bytes_read / sizeof(int32_t));
+  Serial.println("Wywolano read_raw_data_to_buffer");
   return last_sample;
 }

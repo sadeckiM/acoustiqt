@@ -7,10 +7,11 @@
 #include "secrets.hh"
 
 class WiFi_UDP {
-  bool connected = false;
+  volatile bool connected = false;
   uint8_t packet_count = 0;
-  const char * UDP_ADDR = "255.255.255.255";
+  IPAddress UDP_ADDR = IPAddress(192, 168, 2, 59);
   NetworkUDP udp;
+  static constexpr uint8_t LED = 38;
   void connect_to_wifi(const char * ssid, const char *pwd);
 public:
   inline void init_wifi() { connect_to_wifi(NETWORK_NAME, NETWORK_PASSWORD);
